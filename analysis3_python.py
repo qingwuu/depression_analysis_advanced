@@ -481,7 +481,7 @@ if not df.empty:
         path = save_fig_html(fig_subj, "subjectivity_hist")
         print(f"[export] {path}")
 
-# 9.6 时间趋势
+# 9.6 时间趋势（每月+均线）
 if not monthly.empty:
     fig_trend = go.Figure()
     fig_trend.add_trace(go.Scatter(
@@ -507,6 +507,8 @@ if not monthly.empty:
 
 # 9.7 LDA 主题热力图
 if topic_term_matrix:
+    #把列表拼成二维数组（主题*Top20词的权重值）
+    #形状(K, 20)
     tm = np.vstack(topic_term_matrix)  # (N_TOPICS, 20)
     term_axis = term_axis if len(term_axis) > 0 else [f"term{i+1}" for i in range(tm.shape[1])]
     fig_lda = go.Figure(data=go.Heatmap(
@@ -529,8 +531,11 @@ if topic_term_matrix:
 # 10) 词云保存（PNG）
 # ---------------------------
 if len(all_tokens) > 0:
+    # .generate(" ".join(all_tokens))：把所有token用空格拼接成一大段文本，让wordcloud自己统计词频
+    #了替代（更高效）：generate_from_frequencies(Counter(all_tokens))直接用频次，避免拼接长字符串的内存开销
     wc = WordCloud(width=1200, height=600, background_color="white").generate(" ".join(all_tokens))
     plt.figure(figsize=(12, 6))
+    # interpolation="bilinear"：双线性插值，缩放更平滑（抗锯齿）
     plt.imshow(wc, interpolation="bilinear")
     plt.axis("off")
     plt.tight_layout()
